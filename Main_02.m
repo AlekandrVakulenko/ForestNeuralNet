@@ -1,9 +1,13 @@
 
 clc
-load('MAIN_DATA.mat')
-clearvars Density_rel Humidity Table_type
+load('MAIN_DATA_V2.mat')
+% clearvars Density_rel Humidity Table_type
+Month_ind = [3 4 5];
 
-Pixel_pre = Satellite(:, :, 3);
+Month = 4;
+
+Month_ind = find(Month_ind == Month);
+Pixel_pre = Satellite(:, :, Month_ind);
 
 Where_is_nan = isnan(Pixel_pre);
 [row, col] =find(Where_is_nan);
@@ -11,20 +15,28 @@ row = unique(row);
 
 Pixel_pre(row, :) = [];
 Orig_category_biot(row) = [];
+Humidity(row) = [];
+Density_rel(row) = [];
+
+%
+% NormC = sum(Pixel_pre.^2, 2).^0.5;
+% NormC = repmat(NormC, 1, 9);
+% Pixel_pre = Pixel_pre./NormC;
+% Pixel_pre(:, 10) = NormC(:, 1);
+%
 
 Pixel_pre = permute(Pixel_pre, [2, 1]);
 
-% Pixel(1, :, :) = Pixel_pre;
-Pixel_pre_2 = Pixel_pre;
-Pixel_pre_2(:, :, 2, 2) = 0;
-Pixel_pre_2 = permute(Pixel_pre_2, [3, 1, 4, 2]);
-Pixel_pre_2(2, :, :, :) = [];
-Pixel_pre_2(:, :, 2, :) = [];
+Pixel_pre(:, :, 2, 2) = 0;
+Pixel_pre = permute(Pixel_pre, [3, 1, 4, 2]);
+Pixel_pre(2, :, :, :) = [];
+Pixel_pre(:, :, 2, :) = [];
 
-Pixel = Pixel_pre_2;
+Pixel = Pixel_pre;
 
 clearvars ans ch1 ch2 ch3 ch4 ch5 ch6 ch7 ch8 ch9 row col Where_is_nan Pixel_pre Pixel_pre_2
 clearvars Satellite
+clearvars Months_list Month Month_ind
 %%
 clc
 Category_U = unique(Orig_category_biot)
@@ -32,158 +44,51 @@ categories(Orig_category_biot)
 % clearvars Category_U
 clearvars ans
 %%
+clc
+profile_N = 4;
 
-Replace_list.from(1) = "6.1_Лес_березняк-кисличник";
-Replace_list.to(1)   = "6.1_Лес_березняк";
-Replace_list.from(2) = "6.1_Лес_березняк-приручейный";
-Replace_list.to(2)   = "6.1_Лес_березняк";
-Replace_list.from(3) = "6.1_Лес_березняк-разнотравный";
-Replace_list.to(3)   = "6.1_Лес_березняк";
-Replace_list.from(4) = "6.1_Лес_березняк-сфагново-кустарничковый";
-Replace_list.to(4)   = "6.1_Лес_березняк";
-Replace_list.from(5) = "6.1_Лес_березняк-сфагново-травяный";
-Replace_list.to(5)   = "6.1_Лес_березняк";
-Replace_list.from(6) = "6.1_Лес_березняк-сфагновый";
-Replace_list.to(6)   = "6.1_Лес_березняк";
-Replace_list.from(7) = "6.1_Лес_березняк-черничник";
-Replace_list.to(7)   = "6.1_Лес_березняк";
+filename = "XLSX Input 2\Categories.xlsx";
+Replace_list = load_replace_cells(filename);
+Orig_category_biot_small = cat_union(Orig_category_biot, Replace_list, profile_N);
 
-Replace_list.from(8) = "6.1_Лес_ельник-брусничник";
-Replace_list.to(8)   = "6.1_Лес_ельник";
-Replace_list.from(9) = "6.1_Лес_ельник-кисличник";
-Replace_list.to(9)   = "6.1_Лес_ельник";
-Replace_list.from(10) = "6.1_Лес_ельник-приручейный";
-Replace_list.to(10)   = "6.1_Лес_ельник";
-Replace_list.from(11) = "6.1_Лес_ельник-разнотравный";
-Replace_list.to(11)   = "6.1_Лес_ельник";
-Replace_list.from(12) = "6.1_Лес_ельник-сфагново-кустарничковый";
-Replace_list.to(12)   = "6.1_Лес_ельник";
-Replace_list.from(13) = "6.1_Лес_ельник-сфагново-травяный";
-Replace_list.to(13)   = "6.1_Лес_ельник";
-Replace_list.from(14) = "6.1_Лес_ельник-сфагновый";
-Replace_list.to(14)   = "6.1_Лес_ельник";
-Replace_list.from(15) = "6.1_Лес_ельник-черничник";
-Replace_list.to(15)   = "6.1_Лес_ельник";
+Orig_category_biot_small = removecats(Orig_category_biot_small, 'Orig_category_biot');
 
-Replace_list.from(16) = "6.1_Лес_осинник-кисличник";
-Replace_list.to(16)   = "6.1_Лес_осинник";
-Replace_list.from(17) = "6.1_Лес_осинник-разнотравный";
-Replace_list.to(17)   = "6.1_Лес_осинник";
-Replace_list.from(18) = "6.1_Лес_осинник-черничник";
-Replace_list.to(18)   = "6.1_Лес_осинник";
+Cats_unique = unique(Orig_category_biot_small)
 
-Replace_list.from(19) = "6.1_Лес_сероольшанник-кисличник";
-Replace_list.to(19)   = "6.1_Лес_сероольшанник";
-Replace_list.from(20) = "6.1_Лес_сероольшанник-разнотравный";
-Replace_list.to(20)   = "6.1_Лес_сероольшанник";
+clearvars filename profile_N Replace_list
+%% Testing
+clc
 
-Replace_list.from(21) = "6.1_Лес_сосняк-брусничник";
-Replace_list.to(21)   = "6.1_Лес_сосняк";
-Replace_list.from(22) = "6.1_Лес_сосняк-кисличник";
-Replace_list.to(22)   = "6.1_Лес_сосняк";
-Replace_list.from(23) = "6.1_Лес_сосняк-сфагново-кустарничковый";
-Replace_list.to(23)   = "6.1_Лес_сосняк";
-Replace_list.from(24) = "6.1_Лес_сосняк-сфагновый";
-Replace_list.to(24)   = "6.1_Лес_сосняк";
-Replace_list.from(25) = "6.1_Лес_сосняк-черничник";
-Replace_list.to(25)   = "6.1_Лес_сосняк";
+N = 16047;
 
-Replace_list.from(26) = "6.1_Лес_черноольшанник-приручейный";
-Replace_list.to(26)   = "6.1_Лес_черноольшанник";
-Replace_list.from(27) = "6.1_Лес_черноольшанник-разнотравный";
-Replace_list.to(27)   = "6.1_Лес_черноольшанник";
-Replace_list.from(28) = "6.1_Лес_черноольшанник-сфагновый";
-Replace_list.to(28)   = "6.1_Лес_черноольшанник";
+ind = find(Replace_list{1} == Orig_category_biot(N));
 
-Replace_list.from(29) = "3.1_Свежая вырубка";
-Replace_list.to(29)   = "Вырубка";
-Replace_list.from(30) = "3.2_Вырубка <5 лет";
-Replace_list.to(30)   = "Вырубка";
-Replace_list.from(31) = "3.3_Вырубка 5-10 лет";
-Replace_list.to(31)   = "Вырубка";
-Replace_list.from(32) = "3.4_Вырубка 10-20 лет";
-Replace_list.to(32)   = "Вырубка";
+From = Replace_list{1}(ind);
+To = Replace_list{profile_N+1}(ind);
 
-Replace_list.from(33) = "1_Верховое болото ";
-Replace_list.to(33)   = "Болото";
-Replace_list.from(34) = "2_Переходное болото ";
-Replace_list.to(34)   = "Вырубка";
+disp(['FROM: ' char(From) newline 'TO: ' char(To) newline])
 
+Was = Orig_category_biot(N);
+Now = Orig_category_biot_small(N);
 
-Replace_list.from(35) = "6.1_Лес_березняк";
-Replace_list.to(35)   = "Лес_лист";
-Replace_list.from(36) = "6.1_Лес_осинник";
-Replace_list.to(36)   = "Лес_лист";
-Replace_list.from(37) = "6.1_Лес_сероольшанник";
-Replace_list.to(37)   = "Лес_лист";
-Replace_list.from(38) = "6.1_Лес_черноольшанник";
-Replace_list.to(38)   = "Лес_лист";
-
-Replace_list.from(39) = "6.1_Лес_ивняк-разнотравный";
-Replace_list.to(39)   = "Лес_лист";
-Replace_list.from(40) = "6.1_Лес_осинник-сфагновый";
-Replace_list.to(40)   = "Лес_лист";
-Replace_list.from(41) = "6.1_Лес_широколиственный-разнотравный";
-Replace_list.to(41)   = "Лес_лист";
-
-Replace_list.from(42) = "6.1_Лес_сосняк-беломошник";
-Replace_list.to(42)   = "Лес_иголки";
-Replace_list.from(43) = "6.1_Лес_сосняк-разнотравный";
-Replace_list.to(43)   = "Лес_иголки";
-Replace_list.from(44) = "6.1_Лес_сосняк-сфагново-травяный";
-Replace_list.to(44)   = "Лес_иголки";
-Replace_list.from(45) = "6.1_Лес_ельник";
-Replace_list.to(45)   = "Лес_иголки";
-Replace_list.from(46) = "6.1_Лес_сосняк";
-Replace_list.to(46)   = "Лес_иголки";
-
-Replace_list.from(47) = "5.1_Гарь";
-Replace_list.to(47)   = "Похерено";
-Replace_list.from(48) = "5.2_Погибшее насаждение";
-Replace_list.to(48)   = "Похерено";
-
-
-Replace_list.from(49) = "8.1_Поля";
-Replace_list.to(49)   = "Поля";
-Replace_list.from(50) = "7_ЛЭП/Газопровод";
-Replace_list.to(50)   = "ЛЭП/Газопровод";
-
-Replace_list.from(51) = "4_Нелесохозяйственные молодняки";
-Replace_list.to(51)   = "Что-то еще";
-Replace_list.from(52) = "6.2_Редина";
-Replace_list.to(52)   = "Что-то еще";
-Replace_list.from(53) = "6.3_Пойменный лес";
-Replace_list.to(53)   = "Что-то еще";
-Replace_list.from(54) = "8.2_Пойменные луга";
-Replace_list.to(54)   = "Что-то еще";
-
-Replace_list.from(55) = "10_Водный объект";
-Replace_list.to(55)   = "Вода";
-Replace_list.from(56) = "11_Антропоген";
-Replace_list.to(56)   = "Антропоген";
-
-Replace_list.from(57) = "ЛЭП/Газопровод";
-Replace_list.to(57)   = "Вырубка";
-
-for i = 1:numel(Replace_list.from)
-    
-    Range = Orig_category_biot == Replace_list.from(i);
-    Orig_category_biot(Range) = Replace_list.to(i);
-    
-    Orig_category_biot = removecats(Orig_category_biot, Replace_list.from(i));
-    
-end
-
-Orig_category_biot = removecats(Orig_category_biot, 'Orig_category_biot');
-
-clearvars i Replace_list Range
+disp(['FROM: ' char(Was) newline 'TO: ' char(Now) newline])
 
 %%
 clc
-%FIXME: add classes number by unique()
+
+% Net_target = Orig_category_biot_small;
+% range = Table_type == "DEF";
+% range = Table_type == "HIP";
+range = Table_type == "DEF" | Table_type == "HIP";
+Net_target = Density_rel_cat(range);
+Net_input = Pixel(:,:,:,range);
+
+Cats_unique = unique(Net_target);
+
+Input_size = size(Net_input, 2);
 
 Layers_1 = [
-    imageInputLayer([1 9 1],"Name","imageinput","Normalization","none")
+    imageInputLayer([1 Input_size 1],"Name","imageinput","Normalization","none")
     
     fullyConnectedLayer(256,"Name","fc_1")
     leakyReluLayer(0.01,"Name","leakyrelu_1")
@@ -197,13 +102,13 @@ Layers_1 = [
     fullyConnectedLayer(256,"Name","fc_4")
     reluLayer("Name","relu_4")
     
-    fullyConnectedLayer(9,"Name","fc_5")
+    fullyConnectedLayer(numel(Cats_unique),"Name","fc_5")
     
     softmaxLayer("Name","softmax")
     classificationLayer("Name","classoutput")];
 
 Layers_2 = [
-    imageInputLayer([1 9 1],"Name","imageinput","Normalization","none")
+    imageInputLayer([1 Input_size 1],"Name","imageinput","Normalization","none")
     
     fullyConnectedLayer(400,"Name","fc_1")
     leakyReluLayer(0.01,"Name","leakyrelu_1")
@@ -217,57 +122,125 @@ Layers_2 = [
     fullyConnectedLayer(320,"Name","fc_4")
     reluLayer("Name","relu_4")
     
-    fullyConnectedLayer(9,"Name","fc_5")
+    fullyConnectedLayer(numel(Cats_unique),"Name","fc_5")
     
     softmaxLayer("Name","softmax")
     classificationLayer("Name","classoutput")];
 
+Layers_3 = [
+    imageInputLayer([1 Input_size 1],"Name","imageinput","Normalization","none")
+    
+    fullyConnectedLayer(50,"Name","fc_1")
+    leakyReluLayer(0.01,"Name","leakyrelu_1")
+    
+    fullyConnectedLayer(100,"Name","fc_2")
+    leakyReluLayer(0.01,"Name","leakyrelu_2")
+    
+    fullyConnectedLayer(200,"Name","fc_3")
+    leakyReluLayer(0.01,"Name","leakyrelu_3")
+    
+    fullyConnectedLayer(80,"Name","fc_4")
+    reluLayer("Name","relu_4")
+    
+    fullyConnectedLayer(numel(Cats_unique),"Name","fc_5")
+    
+    softmaxLayer("Name","softmax")
+    classificationLayer("Name","classoutput")];
 
-Layers = Layers_2;
+Layers_4 = [
+    imageInputLayer([1 Input_size 1],"Name","imageinput","Normalization","none")
+    
+    fullyConnectedLayer(20,"Name","fc_1")
+    leakyReluLayer(0.01,"Name","leakyrelu_1")
+    
+    fullyConnectedLayer(40,"Name","fc_2")
+    leakyReluLayer(0.01,"Name","leakyrelu_2")
+    
+    fullyConnectedLayer(50,"Name","fc_3")
+    leakyReluLayer(0.01,"Name","leakyrelu_3")
+    
+    fullyConnectedLayer(50,"Name","fc_4")
+    reluLayer("Name","relu_4")
+    
+    fullyConnectedLayer(numel(Cats_unique),"Name","fc_5")
+    
+    softmaxLayer("Name","softmax")
+    classificationLayer("Name","classoutput")];
+
+Layers = Layers_1;
 
 Classification_Layer = Layers(end);
-Classification_Layer.Classes = unique(Orig_category_biot);
+Classification_Layer.Classes = unique(Net_target);
 Layers(end) = Classification_Layer;
 
-clearvars Classification_Layer Layers_1 Layers_2
+clearvars Classification_Layer Input_size
+clearvars Layers_1 Layers_2 Layers_3
 
 %%
+% Orig_category_biot_small = Orig_category_biot_small_BU;
+% Pixel = Pixel_BU;
+% Orig_category_biot_small_BU = Orig_category_biot_small;
+% Pixel_BU = Pixel;
+Delete_ind = randperm(3800) + 6717; %2800 4800
+Net_target(Delete_ind) = [];
+Net_input(:, :, :, Delete_ind) = [];
 
-Size = size(Pixel, 4);
+Delete_ind = randperm(1000) + 4257; %2000
+Net_target(Delete_ind) = [];
+Net_input(:, :, :, Delete_ind) = [];
+
+%%
+Size = size(Net_input, 4);
 Indexes = randperm(Size);
 
-Pixel_Shuffle = Pixel(:, :, :, Indexes);
-Orig_category_biot_Shuffle = Orig_category_biot(Indexes, :);
+Val_part = 1000;
+
+X_train_Shuffle = Net_input(:, :, :, Indexes);
+Y_train_Shuffle = Net_target(Indexes, :);
 
 
-X_train = Pixel_Shuffle(:, :, :, 2001:end);
-Y_train = Orig_category_biot_Shuffle(2001:end);
+X_train = X_train_Shuffle(:, :, :, Val_part+1:end);
+Y_train = Y_train_Shuffle(Val_part+1:end);
 
-X_Validation = Pixel_Shuffle(:, :, :, 1:2000);
-Y_Validation = Orig_category_biot_Shuffle(1:2000);
+X_Validation = X_train_Shuffle(:, :, :, 1:Val_part);
+Y_Validation = Y_train_Shuffle(1:Val_part);
 
-clearvars Size Indexes Pixel_Shuffle Orig_category_biot_Shuffle
+clearvars Size Indexes
+% clearvars Pixel_Shuffle Orig_category_biot_Shuffle
+
+%% new training set shuffle (no)
+
+% hold on
+% plot(double(Orig_category_biot_small))
+% plot(squeeze(Pixel(1,9,1,:))'*2000)
+
+plot(Y_Validation)
+
+% plot(Y_train)
+
 %%
 clc
 
 
 Pptions = trainingOptions('adam', ...
-    'MiniBatchSize', 250, ...
-    'MaxEpochs', 5000, ...
-    'InitialLearnRate', 1e-2, ...
+    'MiniBatchSize', 1000, ...
+    'MaxEpochs', 40000, ...
+    'InitialLearnRate', 5e-3, ...
     'LearnRateSchedule', 'piecewise', ...
     'LearnRateDropFactor', 0.97, ...
-    'LearnRateDropPeriod', 3, ...
+    'LearnRateDropPeriod', 15, ...
     'Shuffle', 'every-epoch', ...
     'ValidationData', {X_Validation, Y_Validation}, ...
     'ValidationFrequency', 200, ...
     'Plots', 'training-progress', ...
     'Verbose', false, ...
-    'ExecutionEnvironment', 'auto', ...
-    'OutputFcn', @(x)makeLogVertAx(x, 1));
+    'ExecutionEnvironment', 'auto');
 
+% 'OutputFcn', @(x)makeLogVertAx(x, 1)
 
-Forest_net_01 = trainNetwork(X_train, Y_train, Layers, Pptions);
+% Forest_net_01 = trainNetwork(X_train, Y_train, Layers, Pptions);
+Density_net_01 = trainNetwork(X_train, Y_train, Layers, Pptions);
+
 
 clearvars Pptions
 %%
@@ -276,25 +249,43 @@ clearvars X_train Y_train X_Validation Y_Validation
 
 %%
 clc
-Category_U
+% Category_U
+Cats_unique
 
 %%
 clc
+% Dataset_in = Pixel;
+% Dataset_out = Orig_category_biot_small;
+Dataset_in = X_Validation;
+Dataset_out = Y_Validation;
+% Dataset_in = X_train;
+% Dataset_out = Y_train;
 
-% Range = Orig_category_biot == "Вырубка";
-% Range = Orig_category_biot == "Лес_лист";
-% Range = Orig_category_biot == "Лес_иголки";
-% Range = Orig_category_biot == "Похерено";
-% Range = Orig_category_biot == "Поля";
-% Range = Orig_category_biot == "ЛЭП/Газопровод";
-% Range = Orig_category_biot == "Что-то еще";
-% Range = Orig_category_biot == "Вода";
-Range = Orig_category_biot == "Антропоген";
+% Test_net = Forest_net_01;
+Test_net = Density_net_01;
 
+% Range = Dataset_out == "Лиственный сухой лес";
+% Range = Dataset_out == "Лиственный влажный лес";
+% Range = Dataset_out == "Хвойный сухой лес";
+% Range = Dataset_out == "Хвойный влажный лес";
+
+% Range = Dataset_out == "Лиственный лес";
+% Range = Dataset_out == "Хвойный лес";
+% Range = Dataset_out == "Болото";
+% Range = Dataset_out == "Вырубка";
+% Range = Dataset_out == "Лес";
+% Range = Dataset_out == "Поля";
+% Range = Dataset_out == "Водный объект";
+% Range = Dataset_out == "Антропоген";
+
+% Range = Dataset_out == "zero";
+% Range = Dataset_out == "low";
+% Range = Dataset_out == "mid";
+% Range = Dataset_out == "high";
 
 Indexes = find(Range);
 
-Pixel_part = Pixel(1,:,1,Indexes);
+% Pixel_part = Pixel(1,:,1,Indexes);
 
 k = 0;
 Label = "";
@@ -303,8 +294,8 @@ for i = 1:numel(Indexes)
 
     ind = Indexes(i);
     
-[Label_out, ~] = classify(Forest_net_01, Pixel(1,:,1,ind));
-Label_true_out = Orig_category_biot(ind);
+[Label_out, ~] = classify(Test_net, Dataset_in(1,:,1,ind));
+Label_true_out = Dataset_out(ind);
 
 if Label_out ~= Label_true_out
     k=k+1;
@@ -321,10 +312,156 @@ Accuracy = 1 - size(Label,1) / size(Indexes,1);
 
 disp([newline 'Accuracy:' num2str(round(Accuracy*1000)/10) '%']);
 
+clearvars Test_net
+
+%%
+clc
+% Category_U
+Cats_unique
+
+%% histogram cut
+clc
+clearvars Orig_category_biot
+Coeffs_out = [];
+Density_rel_out = [];
+Humidity_out = [];
+Orig_category_biot_small_out = [];
+Table_type_out = [];
+
+
+Cats_unique = unique(Orig_category_biot_small);
+Coeffs = squeeze(Pixel)';
+
+clearvars Pixel
+
+for current_cat_N = 1:numel(Cats_unique)
+    current_cat = Cats_unique(current_cat_N)
+    % range = Orig_category_biot_small == "Лиственный лес";
+    % range = Orig_category_biot_small == "Хвойный лес";
+    % range = Orig_category_biot_small == "Молодняк";
+    
+    % range = Orig_category_biot_small == "Болото";
+    % range = Orig_category_biot_small == "Вырубка";
+    % range = Orig_category_biot_small == "Лес";
+    % range = Orig_category_biot_small == "Поля";
+    % range = Orig_category_biot_small == "Водный объект";
+    % range = Orig_category_biot_small == "Антропоген";
+    
+    range = Orig_category_biot_small == current_cat;
+    
+    Coeffs_part = Coeffs(range, :);
+    Density_rel_part = Density_rel(range);
+    Humidity_part = Humidity(range);
+    Category_part = Orig_category_biot_small(range);
+    Table_type_part = Table_type(range);
+    
+    P_value = 5;
+    
+    for N = 1:size(Coeffs_part, 2)
+        Data = Coeffs_part(:, N);
+        
+        P_low = prctile(Data, P_value);
+        P_high = prctile(Data, 100-P_value);
+        
+        if N == 1
+            remove_range = (Data < P_low | Data > P_high);
+        else
+            remove_range = remove_range | (Data < P_low | Data > P_high);
+        end
+        %     Data(~stay_range) = [];
+        
+%         figure
+%         hold on
+%         histogram(Data, 100)
+%         xline(P_low)
+%         xline(P_high)
+%         title(num2str(N))
+        %     set(gca, 'yscale', 'log')
+        
+    end
+    stay_range = ~remove_range;
+    numel(find(stay_range))
+    
+    Coeffs_out = [Coeffs_out; Coeffs_part(stay_range, :)];
+    Density_rel_out = [Density_rel_out; Density_rel_part(stay_range)];
+    Humidity_out = [Humidity_out; Humidity_part(stay_range)];
+    Orig_category_biot_small_out = [Orig_category_biot_small_out; Category_part(stay_range)];
+    Table_type_out = [Table_type_out; Table_type_part(stay_range)];
+    
+    
+end
+
+Coeffs = Coeffs_out;
+Density_rel = Density_rel_out;
+Humidity = Humidity_out;
+Orig_category_biot_small = Orig_category_biot_small_out;
+Table_type = Table_type_out;
+clearvars Coeffs_out Density_rel_out Humidity_out Orig_category_biot_small_out Table_type_out
+
+
+Pixel = Coeffs';
+Pixel(:, :, 2, 2) = 0;
+Pixel = permute(Pixel, [3, 1, 4, 2]);
+Pixel(2, :, :, :) = [];
+Pixel(:, :, 2, :) = [];
 
 
 
+clearvars range P_low P_high P_value N Data Part_cat current_cat_N current_cat
+clearvars Coeffs_part Density_rel_part Humidity_part Category_part Table_type_part
+clearvars stay_range remove_range Cats_unique ans
 
+%%
+clc
+
+Density_rel_cat = categorical("");
+
+range = Density_rel == 0;
+Density_rel_cat(range) = categorical("zero");
+
+range = Density_rel > 0 & Density_rel <= 0.08;
+Density_rel_cat(range) = categorical("low");
+
+range = Density_rel > 0.08;
+Density_rel_cat(range) = categorical("high");
+
+Density_rel_cat = Density_rel_cat';
+
+
+%%
+clc
+
+% range = Orig_category_biot_small == "Лиственный лес";
+% range = Orig_category_biot_small == "Хвойный лес";
+% range = Orig_category_biot_small == "Молодняк";
+
+% range = Orig_category_biot_small == "Болото";
+% range = Orig_category_biot_small == "Вырубка";
+% range = Orig_category_biot_small == "Лес";
+% range = Orig_category_biot_small == "Поля";
+% range = Orig_category_biot_small == "Водный объект";
+range = Orig_category_biot_small == "Антропоген";
+
+
+Coeffs_part = Coeffs(range, :);
+
+P_value = 5;
+
+
+for N = 1:size(Coeffs_part, 2)
+    Data = Coeffs_part(:, N);
+
+    figure
+    hold on
+    histogram(Data, 100)
+    title(num2str(N))
+    set(gca, 'yscale', 'log')
+    
+end
+
+
+
+clearvars range P_low P_high P_value N Data Part_cat current_cat_N current_cat range Coeffs_part
 
 
 

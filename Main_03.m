@@ -1,15 +1,16 @@
 
 clc
 
-Month = 5;
+Month = 4;
 
 if Month == 4
     filename = 'Input_images/All_area_April_MLTch__184_185_20210411_20210416_3857Pseudo.TIF';
+%     filename = 'Input_images/output/All_area_April_OUT.TIF';
 end
 if Month == 5
     filename = 'Input_images/Allarea_May_MLTch_184_186_3587Pseudo.tif';
 end
-disp([filename ' ...opening...'])
+disp(['Opening:' newline filename])
 
 Tiff_obj = Tiff(filename);
 
@@ -19,7 +20,7 @@ disp('file ready');
 
 %%
 clc
-disp([filename ' ...start imaging...'])
+disp(['Start imaging:' newline filename ])
 
 imagesc(Image_Data(:,:,3));
 % set(gca,'ColorScale','log')
@@ -37,7 +38,8 @@ if Month == 5
     Image_part = Image_Data(8034:8754, 9786:10506, :);
 end
 if Month == 4
-    Image_part = Image_Data(2811:3560, 6879:7628, :);
+%     Image_part = Image_Data(2811:3560, 6879:7628, :);
+    Image_part = Image_Data(2611:3760, 6300:7828, :);
 end
 
 figure
@@ -51,6 +53,9 @@ colormap gray
 %% Image part reshape and CLASSIFY
 clc
 
+% Target_net = Forest_net_01;
+Target_net = Density_net_01;
+
 Reshape_size = [size(Image_part,1)*size(Image_part,2), size(Image_part,3)];
 Initial_size = [size(Image_part, 1), size(Image_part, 2)];
 
@@ -62,8 +67,9 @@ Line_4D = permute(Line_4D, [3, 1, 4, 2]);
 Line_4D(2, :, :, :) = [];
 Line_4D(:, :, 2, :) = [];
 
+disp(['Start classifying:' newline filename ])
 tic;
-[Label_out, ~] = classify(Forest_net_01, Line_4D);
+[Label_out, ~] = classify(Target_net, Line_4D);
 time = toc;
 disp(['Elapsed time: ' num2str(time) ' s'])
 
@@ -88,28 +94,47 @@ Category(1) = "Вырубка";
 Color(1, :) = [138 119 14]/255;
 
 Category(2) = "Болото";
-Color(2, :) = [35 56 30]/255;
+Color(2, :) = [120 20 30]/255;
 
-Category(3) = "Лес_лист";
-Color(3, :) = [55 255 15]/255;
+Category(3) = "Молодняк";
+Color(3, :) = [105 255 35]/255;
 
-Category(4) = "Лес_иголки";
-Color(4, :) = [68 143 3]/255;
+Category(4) = "Поля";
+Color(4, :) = [200 200 0]/255;
 
-Category(5) = "Поля";
-Color(5, :) = [200 200 0]/255;
+Category(5) = "Водный объект";
+Color(5, :) = [13 105 224]/255;
 
-Category(6) = "Что-то еще";
-Color(6, :) = [0 0 0]/255;
+Category(6) = "Антропоген";
+Color(6, :) = [130 130 130]/255;
 
-Category(7) = "Вода";
-Color(7, :) = [13 105 224]/255;
+Category(7) = "Лиственный лес";
+Color(7, :) = [55 200 10]/255;
 
-Category(8) = "Антропоген";
-Color(8, :) = [130 130 130]/255;
+Category(8) = "Хвойный лес";
+Color(8, :) = [34 70 0]/255;
 
-Category(9) = "Похерено";
-Color(9, :) = [180 0 0]/255;
+% Category(9) = "Лиственный сухой лес";
+% Color(9, :) = [55 200 10]/255;
+% 
+% Category(10) = "Лиственный влажный лес";
+% Color(10, :) = [55 200 10]/255;
+% 
+% Category(11) = "Хвойный сухой лес";
+% Color(11, :) = [34 70 0]/255;
+% 
+% Category(12) = "Хвойный влажный лес";
+% Color(12, :) = [34 70 0]/255;
+
+Category(1) = "zero";
+Color(1, :) = [20 20 20]/255;
+
+Category(2) = "low";
+Color(2, :) = [200 200 20]/255;
+
+Category(3) = "high";
+Color(3, :) = [30 220 30]/255;
+
 
 Image_R = zeros(size(Image_result,1), size(Image_result,2));
 Image_G = zeros(size(Image_result,1), size(Image_result,2));
@@ -132,6 +157,7 @@ clearvars Image_R Image_G Image_B
 %%
 figure
 imshow(Image_RGB)
+% imshow(Image_RGB_conv)
 axis equal
 
 figure
@@ -143,12 +169,23 @@ axis equal
 figure
 for i = 1:numel(Category)
     
-text(0.1, 0.0 + 0.1*i, Category(i), 'color', Color(i, :))
+text(0.1, 0.0 + 0.05*i, Category(i), 'color', Color(i, :))
 
 end
 
 
 
+%%
+
+% Image_part_conv = Image_part;
+
+N = 3;
+
+Kernel = ones(N)/N^2;
+Image_RGB_conv = [];
+Image_RGB_conv(:,:,1) = conv2(Image_RGB(:,:,1), Kernel);
+Image_RGB_conv(:,:,2) = conv2(Image_RGB(:,:,2), Kernel);
+Image_RGB_conv(:,:,3) = conv2(Image_RGB(:,:,3), Kernel);
 
 
 

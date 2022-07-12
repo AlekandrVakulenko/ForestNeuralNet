@@ -39,7 +39,8 @@ if Month == 5
 end
 if Month == 4
 %     Image_part = Image_Data(2811:3560, 6879:7628, :);
-    Image_part = Image_Data(2611:3760, 6300:7828, :);
+%     Image_part = Image_Data(2611:3760, 6300:7828, :);
+      Image_part = Image_Data(9156:9880, 5495:6149, :);
 end
 
 figure
@@ -53,8 +54,8 @@ colormap gray
 %% Image part reshape and CLASSIFY
 clc
 
-% Target_net = Forest_net_01;
-Target_net = Density_net_01;
+Target_net = Forest_net_01;
+% Target_net = Density_net_01;
 
 Reshape_size = [size(Image_part,1)*size(Image_part,2), size(Image_part,3)];
 Initial_size = [size(Image_part, 1), size(Image_part, 2)];
@@ -156,8 +157,8 @@ clearvars Image_R Image_G Image_B
 
 %%
 figure
-imshow(Image_RGB)
-% imshow(Image_RGB_conv)
+% imshow(Image_RGB)
+imshow(Image_RGB_conv)
 axis equal
 
 figure

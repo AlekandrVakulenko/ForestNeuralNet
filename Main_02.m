@@ -1,10 +1,11 @@
-
+%% 1111
 clc
+addpath('_include')
 load('MAIN_DATA_V2.mat')
 % clearvars Density_rel Humidity Table_type
 Month_ind = [3 4 5];
 
-Month = 4;
+Month = 5;
 
 Month_ind = find(Month_ind == Month);
 Pixel_pre = Satellite(:, :, Month_ind);
@@ -43,7 +44,7 @@ Category_U = unique(Orig_category_biot)
 categories(Orig_category_biot)
 % clearvars Category_U
 clearvars ans
-%%
+%% 2222
 clc
 profile_N = 4;
 
@@ -76,12 +77,13 @@ disp(['FROM: ' char(Was) newline 'TO: ' char(Now) newline])
 %%
 clc
 
-% Net_target = Orig_category_biot_small;
+Net_target = Orig_category_biot_small;
+% Net_target = Density_rel_cat(range);
 % range = Table_type == "DEF";
 % range = Table_type == "HIP";
-range = Table_type == "DEF" | Table_type == "HIP";
-Net_target = Density_rel_cat(range);
-Net_input = Pixel(:,:,:,range);
+% range = Table_type == "DEF" | Table_type == "HIP";
+% Net_input = Pixel(:,:,:,range);
+Net_input = Pixel;
 
 Cats_unique = unique(Net_target);
 
@@ -294,7 +296,7 @@ for i = 1:numel(Indexes)
 
     ind = Indexes(i);
     
-[Label_out, ~] = classify(Test_net, Dataset_in(1,:,1,ind));
+[Label_out, scores] = classify(Test_net, Dataset_in(1,:,1,ind));
 Label_true_out = Dataset_out(ind);
 
 if Label_out ~= Label_true_out
@@ -303,9 +305,9 @@ if Label_out ~= Label_true_out
     Label(k, 2) = Label_out;
     flag = "ERROR";
 else
-    flag = "OK";
+    flag = "OK    ";
 end
-    disp([num2str(i) '/' num2str(numel(Indexes)) ' ' char(flag)])
+    disp([num2str(i) '/' num2str(numel(Indexes)) ' ' char(flag) '    ' char(Label_out) '   ' num2str(scores)])
 end
 
 Accuracy = 1 - size(Label,1) / size(Indexes,1);
@@ -319,7 +321,7 @@ clc
 % Category_U
 Cats_unique
 
-%% histogram cut
+%% histogram cut 3333
 clc
 clearvars Orig_category_biot
 Coeffs_out = [];
@@ -411,7 +413,7 @@ clearvars range P_low P_high P_value N Data Part_cat current_cat_N current_cat
 clearvars Coeffs_part Density_rel_part Humidity_part Category_part Table_type_part
 clearvars stay_range remove_range Cats_unique ans
 
-%%
+%% 4444
 clc
 
 Density_rel_cat = categorical("");

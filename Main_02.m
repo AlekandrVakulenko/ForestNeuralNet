@@ -58,13 +58,16 @@ clearvars filename profile_N Replace_list
 %% Create Net Layers
 clc
 
-Net_target = Orig_category_biot_small;
-% Net_target = Density_rel_cat(range);
 % range = Table_type == "DEF";
-% range = Table_type == "HIP";
+range = Table_type == "HIP";
+range = range | (Orig_category_biot_small == "Водный объект");
+range = range | (Orig_category_biot_small == "Антропоген");
 % range = Table_type == "DEF" | Table_type == "HIP";
-% Net_input = Pixel(:,:,:,range);
-Net_input = Pixel;
+Net_input = Pixel(:,:,:,range);
+Net_target = Density_rel_cat(range);
+
+% Net_target = Orig_category_biot_small;
+% Net_input = Pixel;
 
 Cats_unique = unique(Net_target);
 
@@ -176,7 +179,7 @@ Net_input(:, :, :, Delete_ind) = [];
 Size = size(Net_input, 4);
 Indexes = randperm(Size);
 
-Val_part = 4000;
+Val_part = 3500;
 
 X_train_Shuffle = Net_input(:, :, :, Indexes);
 Y_train_Shuffle = Net_target(Indexes, :);
@@ -221,8 +224,8 @@ Pptions = trainingOptions('adam', ...
 
 % 'OutputFcn', @(x)makeLogVertAx(x, 1)
 
-Forest_net_V3_01 = trainNetwork(X_train, Y_train, Layers, Pptions);
-% Density_net_01 = trainNetwork(X_train, Y_train, Layers, Pptions);
+% Forest_net_V3_01 = trainNetwork(X_train, Y_train, Layers, Pptions);
+Density_net_HIP_V3_01 = trainNetwork(X_train, Y_train, Layers, Pptions);
 
 
 clearvars Pptions
@@ -402,10 +405,10 @@ Density_rel_cat = categorical("");
 range = Density_rel == 0;
 Density_rel_cat(range) = categorical("zero");
 
-range = Density_rel > 0 & Density_rel <= 0.08;
+range = Density_rel > 0 & Density_rel <= 0.125;
 Density_rel_cat(range) = categorical("low");
 
-range = Density_rel > 0.08;
+range = Density_rel > 0.125;
 Density_rel_cat(range) = categorical("high");
 
 Density_rel_cat = Density_rel_cat';

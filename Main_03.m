@@ -39,8 +39,8 @@ if Month == 5
 end
 if Month == 4
 %     Image_part = Image_Data(2811:3560, 6879:7628, :);
-%     Image_part = Image_Data(2611:3760, 6300:7828, :);
-      Image_part = Image_Data(9156:9880, 5495:6149, :);
+    Image_part = Image_Data(2611:3760, 6300:7828, :);
+%       Image_part = Image_Data(9156:9880, 5495:6149, :);
 end
 
 figure
@@ -54,7 +54,7 @@ colormap gray
 %% Image part reshape and CLASSIFY
 clc
 
-Target_net = Forest_net_01;
+Target_net = Forest_net_V3_01;
 % Target_net = Density_net_01;
 
 Reshape_size = [size(Image_part,1)*size(Image_part,2), size(Image_part,3)];
@@ -127,14 +127,15 @@ Color(8, :) = [34 70 0]/255;
 % Category(12) = "Хвойный влажный лес";
 % Color(12, :) = [34 70 0]/255;
 
-Category(1) = "zero";
-Color(1, :) = [20 20 20]/255;
 
-Category(2) = "low";
-Color(2, :) = [200 200 20]/255;
-
-Category(3) = "high";
-Color(3, :) = [30 220 30]/255;
+% Category(1) = "zero";
+% Color(1, :) = [20 20 20]/255;
+% 
+% Category(2) = "low";
+% Color(2, :) = [200 200 20]/255;
+% 
+% Category(3) = "high";
+% Color(3, :) = [30 220 30]/255;
 
 
 Image_R = zeros(size(Image_result,1), size(Image_result,2));
@@ -157,8 +158,8 @@ clearvars Image_R Image_G Image_B
 
 %%
 figure
-% imshow(Image_RGB)
-imshow(Image_RGB_conv)
+imshow(Image_RGB)
+% imshow(Image_RGB_conv)
 axis equal
 
 figure

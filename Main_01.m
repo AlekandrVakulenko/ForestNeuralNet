@@ -12,7 +12,7 @@ comment = 'DEF';
  Humidity_DEF, ...
  Density_rel_DEF, ...
  Months_DEF, ...
- Table_type_DEF] = open_tabel(filename, comment);
+ Table_type_DEF] = open_tabel_all_ch(filename, comment);
 
 clearvars filename comment
 
@@ -25,7 +25,7 @@ comment = 'HIP';
  Humidity_HIP, ...
  Density_rel_HIP, ...
  Months_HIP, ...
- Table_type_HIP] = open_tabel(filename, comment);
+ Table_type_HIP] = open_tabel_all_ch(filename, comment);
 
 clearvars filename comment
 
@@ -50,7 +50,7 @@ clearvars Density_rel_DEF Density_rel_HIP
 Table_type = [Table_type_DEF; Table_type_HIP];
 clearvars Table_type_DEF Table_type_HIP
 
-Months = Months_HIP;
+Month_list = Months_HIP;
 clearvars Months_DEF Months_HIP
 
 % clearvars Months
@@ -59,7 +59,7 @@ clearvars Months_DEF Months_HIP
 clc
 
 disp('1) Data concatenation');
-Satellite_line = [Satellite(:,:,1), Satellite(:,:,1), Satellite(:,:,1)];
+Satellite_line = reshape(Satellite, [size(Satellite,1), size(Satellite,2)*size(Satellite,3)]);
 Satellite_line(:, end+1) = double(Humidity);
 Satellite_line(:, end+1) = double(Orig_category_biot);
 Satellite_line(:, end+1) = Density_rel;
@@ -81,7 +81,7 @@ range = false(numel(Hash), 1);
 
 time_predict = numel(Hash)*120/70000;
 disp('3) Comparison of repeated data');
-disp(['Time prediction: ' num2str(round(time_predict)) ' s']);
+disp(['->Time prediction: ' num2str(round(time_predict)) ' s']);
 disp('processing...');
 
 tic
@@ -106,58 +106,15 @@ clearvars range
 disp('READY');
 
 
-%FIXME: add NaN find
-
-%FIMXE: remove TITLE cats like "Orig_category_biot"
 
 
 
 
-%% Delete repeats VERSION 2
-clc
-
-disp('1) Data concatenation');
-Satellite_line = [Satellite(:,:,1), Satellite(:,:,1), Satellite(:,:,1)];
-Satellite_line(:, end+1) = double(Humidity);
-Satellite_line(:, end+1) = double(Orig_category_biot);
-Satellite_line(:, end+1) = Density_rel;
 
 
-%
-range = false(size(Satellite_line,1), 1);
 
-time_predict = size(Satellite_line,1)*120/70000*2.66;
-disp('3) Comparison of repeated data');
-disp(['Time prediction: ' num2str(round(time_predict)) ' s']);
-disp('processing...');
 
-tic
-for i = 1:size(Satellite_line,1)-1
-    cond = sum(Satellite_line(i,:) == Satellite_line(i+1:end, :), 2) == size(Satellite_line, 2);
-    range(i+1:end) = range(i+1:end) | cond;
-end
-time = toc;
-disp(['Passed time: ' num2str(round(time)) ' s']);
 
-clearvars i A time_predict time Hash
-
-%
-disp('4) Erasing of repeated data');
-Satellite(range, :, :) = [];
-Orig_category_biot(range) = [];
-Humidity(range) = [];
-Density_rel(range) = [];
-Table_type(range) = [];
-
-clearvars range
-
-disp('READY');
-
-clearvars Satellite_line
-
-%FIXME: add NaN find
-
-%FIMXE: remove TITLE cats like "Orig_category_biot"
 
 
 

@@ -1,5 +1,3 @@
-
-
 function [Satellite, Orig_category_biot, Humidity, Density_rel, Months, Table_type] = open_tabel(filename, comment)
 disp(['Opening <' char(filename) '>'])
 

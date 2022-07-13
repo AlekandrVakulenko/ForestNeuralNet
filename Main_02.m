@@ -1,13 +1,13 @@
 %% 1111
 clc
 addpath('_include')
-load('MAIN_DATA_V2.mat')
+load('MAIN_DATA_V3.mat')
 % clearvars Density_rel Humidity Table_type
-Month_ind = [3 4 5];
+Month_list = [3 4 5 6 7];
 
-Month = 5;
+Month = 4;
 
-Month_ind = find(Month_ind == Month);
+Month_ind = find(Month_list == Month);
 Pixel_pre = Satellite(:, :, Month_ind);
 
 Where_is_nan = isnan(Pixel_pre);
@@ -15,16 +15,15 @@ Where_is_nan = isnan(Pixel_pre);
 row = unique(row);
 
 Pixel_pre(row, :) = [];
-Orig_category_biot(row) = [];
-Humidity(row) = [];
 Density_rel(row) = [];
+Humidity(row) = [];
+Orig_category_biot(row) = [];
+Table_type(row) = [];
 
-%
 % NormC = sum(Pixel_pre.^2, 2).^0.5;
 % NormC = repmat(NormC, 1, 9);
 % Pixel_pre = Pixel_pre./NormC;
 % Pixel_pre(:, 10) = NormC(:, 1);
-%
 
 Pixel_pre = permute(Pixel_pre, [2, 1]);
 
@@ -37,14 +36,13 @@ Pixel = Pixel_pre;
 
 clearvars ans ch1 ch2 ch3 ch4 ch5 ch6 ch7 ch8 ch9 row col Where_is_nan Pixel_pre Pixel_pre_2
 clearvars Satellite
-clearvars Months_list Month Month_ind
-%%
+clearvars Month_list Month Month_ind
+%% look at cats
 clc
 Category_U = unique(Orig_category_biot)
 categories(Orig_category_biot)
-% clearvars Category_U
-clearvars ans
-%% 2222
+clearvars ans Category_U
+%% Replace cats 2222
 clc
 profile_N = 4;
 
@@ -57,24 +55,7 @@ Orig_category_biot_small = removecats(Orig_category_biot_small, 'Orig_category_b
 Cats_unique = unique(Orig_category_biot_small)
 
 clearvars filename profile_N Replace_list
-%% Testing
-clc
-
-N = 16047;
-
-ind = find(Replace_list{1} == Orig_category_biot(N));
-
-From = Replace_list{1}(ind);
-To = Replace_list{profile_N+1}(ind);
-
-disp(['FROM: ' char(From) newline 'TO: ' char(To) newline])
-
-Was = Orig_category_biot(N);
-Now = Orig_category_biot_small(N);
-
-disp(['FROM: ' char(Was) newline 'TO: ' char(Now) newline])
-
-%%
+%% Create Net Layers
 clc
 
 Net_target = Orig_category_biot_small;
@@ -195,7 +176,7 @@ Net_input(:, :, :, Delete_ind) = [];
 Size = size(Net_input, 4);
 Indexes = randperm(Size);
 
-Val_part = 1000;
+Val_part = 4000;
 
 X_train_Shuffle = Net_input(:, :, :, Indexes);
 Y_train_Shuffle = Net_target(Indexes, :);
@@ -240,8 +221,8 @@ Pptions = trainingOptions('adam', ...
 
 % 'OutputFcn', @(x)makeLogVertAx(x, 1)
 
-% Forest_net_01 = trainNetwork(X_train, Y_train, Layers, Pptions);
-Density_net_01 = trainNetwork(X_train, Y_train, Layers, Pptions);
+Forest_net_V3_01 = trainNetwork(X_train, Y_train, Layers, Pptions);
+% Density_net_01 = trainNetwork(X_train, Y_train, Layers, Pptions);
 
 
 clearvars Pptions
@@ -263,8 +244,8 @@ Dataset_out = Y_Validation;
 % Dataset_in = X_train;
 % Dataset_out = Y_train;
 
-% Test_net = Forest_net_01;
-Test_net = Density_net_01;
+Test_net = Forest_net_V3_01;
+% Test_net = Density_net_01;
 
 % Range = Dataset_out == "Лиственный сухой лес";
 % Range = Dataset_out == "Лиственный влажный лес";
@@ -408,7 +389,7 @@ Pixel(2, :, :, :) = [];
 Pixel(:, :, 2, :) = [];
 
 
-
+clearvars Coeffs
 clearvars range P_low P_high P_value N Data Part_cat current_cat_N current_cat
 clearvars Coeffs_part Density_rel_part Humidity_part Category_part Table_type_part
 clearvars stay_range remove_range Cats_unique ans

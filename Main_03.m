@@ -63,10 +63,10 @@ colormap gray
 
 %% Image part reshape and CLASSIFY
 clc
-
-% Target_net = Forest_net_V3_01;
+Target_net = Humidity_net_V3_02;
+% Target_net = Forest_net_V3_02;
 % Target_net = Density_net_DEF_V3_01;
-Target_net = Density_net_HIP_V3_01;
+% Target_net = Density_net_HIP_V3_01;
 
 Reshape_size = [size(Image_part,1)*size(Image_part,2), size(Image_part,3)];
 Initial_size = [size(Image_part, 1), size(Image_part, 2)];
@@ -102,11 +102,11 @@ Category = "";
 Color = [];
 
 
-% Category(1) = "Вырубка";
-% Color(1, :) = [138 119 14]/255;
-% 
 % Category(2) = "Болото";
 % Color(2, :) = [120 20 30]/255;
+% 
+% Category(1) = "Вырубка";
+% Color(1, :) = [138 119 14]/255;
 % 
 % Category(3) = "Молодняк";
 % Color(3, :) = [105 255 35]/255;
@@ -120,34 +120,48 @@ Color = [];
 % Category(6) = "Антропоген";
 % Color(6, :) = [130 130 130]/255;
 % 
-% Category(7) = "Лиственный лес";
+% Category(7) = "Сухой или свежий сосняк";
 % Color(7, :) = [55 200 10]/255;
 % 
-% Category(8) = "Хвойный лес";
+% Category(8) = "Увлажненный сосняк";
 % Color(8, :) = [34 70 0]/255;
-
-
-% Category(9) = "Лиственный сухой лес";
+% 
+% Category(9) = "Сухой или свежий лиственный лес";
 % Color(9, :) = [55 200 10]/255;
 % 
-% Category(10) = "Лиственный влажный лес";
+% Category(10) = "Увлажненный лиственный лес";
 % Color(10, :) = [55 200 10]/255;
 % 
-% Category(11) = "Хвойный сухой лес";
+% Category(11) = "Сухой или свежий ельник";
 % Color(11, :) = [34 70 0]/255;
 % 
-% Category(12) = "Хвойный влажный лес";
+% Category(12) = "Увлажненный ельник";
 % Color(12, :) = [34 70 0]/255;
 
 
-Category(1) = "zero";
+
+Category(1) = "-";
+Color(1, :) = [0 0 0]/255;
+
+Category(1) = "Недостаточное увлажнение";
 Color(1, :) = [20 20 20]/255;
 
-Category(2) = "low";
-Color(2, :) = [100 100 20]/255;
+Category(2) = "Умеренное увлажнение";
+Color(2, :) = [120 120 40]/255;
 
-Category(3) = "high";
+Category(3) = "Избыточное увлажнение";
 Color(3, :) = [30 220 30]/255;
+
+
+
+% Category(1) = "zero";
+% Color(1, :) = [20 20 20]/255;
+% 
+% Category(2) = "low";
+% Color(2, :) = [100 100 20]/255;
+% 
+% Category(3) = "high";
+% Color(3, :) = [30 220 30]/255;
 
 
 Image_R = zeros(size(Image_result,1), size(Image_result,2));
@@ -170,8 +184,8 @@ clearvars Image_R Image_G Image_B
 
 %%
 figure
-% imshow(Image_RGB)
-imshow(Image_RGB_conv)
+imshow(Image_RGB)
+% imshow(Image_RGB_conv)
 axis equal
 
 figure

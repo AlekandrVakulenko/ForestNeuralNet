@@ -1,6 +1,3 @@
-
-
-
 function Replace_cells = load_replace_cells(filename)
 
 %% Set up the Import Options and import the data

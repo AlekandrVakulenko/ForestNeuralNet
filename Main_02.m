@@ -1,4 +1,4 @@
-%% 1111
+%% Load data (1111)
 clc
 addpath('_include')
 load('MAIN_DATA_V3.mat')
@@ -37,37 +37,95 @@ Pixel = Pixel_pre;
 clearvars ans ch1 ch2 ch3 ch4 ch5 ch6 ch7 ch8 ch9 row col Where_is_nan Pixel_pre Pixel_pre_2
 clearvars Satellite
 clearvars Month_list Month Month_ind
+
 %% look at cats
 clc
 Category_U = unique(Orig_category_biot)
 categories(Orig_category_biot)
 clearvars ans Category_U
-%% Replace cats 2222
-clc
-profile_N = 4;
 
-filename = "XLSX Input 2\Categories.xlsx";
-Replace_list = load_replace_cells(filename);
-Orig_category_biot_small = cat_union(Orig_category_biot, Replace_list, profile_N);
+%% Replace cats (2222)
+clc
+Profile_name = "Cat3.2"; %"no", "Cat1", "Cat2", "Cat3", "Cat3.1", "Cat3.2", "Cat4", "Cat5";
+
+if Profile_name ~= "no"
+    filename = "XLSX Input 2\Categories_V3.xlsx";
+    Replace_list = load_replace_cells_V3(filename, Profile_name);
+    Orig_category_biot_small = cat_union(Orig_category_biot, Replace_list);
+else
+    Orig_category_biot_small = Orig_category_biot;
+end
 
 Orig_category_biot_small = removecats(Orig_category_biot_small, 'Orig_category_biot');
+Cats_unique = unique(Orig_category_biot_small);
+disp(Cats_unique);
 
-Cats_unique = unique(Orig_category_biot_small)
+clearvars filename Profile_name Replace_list
 
-clearvars filename profile_N Replace_list
-%% Create Net Layers
+%% histogram cut (3333)
+
+[Pixel, Orig_category_biot_small, Density_rel, Humidity, Table_type] = ...
+    histogram_cut(Pixel, Orig_category_biot_small, Density_rel, Humidity, Table_type, 5);
+clearvars Orig_category_biot
+
+%% Density categorical (4444)
+clc
+
+Density_rel_cat = categorical("");
+
+range = Density_rel == 0;
+Density_rel_cat(range) = categorical("zero");
+
+range = Density_rel > 0 & Density_rel <= 0.125;
+Density_rel_cat(range) = categorical("low");
+
+range = Density_rel > 0.125;
+Density_rel_cat(range) = categorical("high");
+
+Density_rel_cat = Density_rel_cat';
+
+%% Humidity replace cats
+clc
+
+unique(Humidity)
+
+From = "Сухо";
+To = "Недостаточное увлажнение";
+range = Humidity == From;
+Humidity(range) = To;
+Humidity = removecats(Humidity, From);
+
+From = "Фрагментированное";
+To = "-";
+range = Humidity == From;
+Humidity(range) = To;
+Humidity = removecats(Humidity, From);
+
+From = "Фрагментированное увлажнение";
+To = "-";
+range = Humidity == From;
+Humidity(range) = To;
+Humidity = removecats(Humidity, From);
+
+Humidity = removecats(Humidity, "Увлажнение");
+
+clearvars range From To
+
+unique(Humidity)
+%% Create Net Layers (5555)
 clc
 
 % range = Table_type == "DEF";
-range = Table_type == "HIP";
-range = range | (Orig_category_biot_small == "Водный объект");
-range = range | (Orig_category_biot_small == "Антропоген");
+% range = Table_type == "HIP";
 % range = Table_type == "DEF" | Table_type == "HIP";
-Net_input = Pixel(:,:,:,range);
-Net_target = Density_rel_cat(range);
+% range = range | (Orig_category_biot_small == "Водный объект");
+% range = range | (Orig_category_biot_small == "Антропоген");
+% Net_input = Pixel(:,:,:,range);
+% Net_target = Density_rel_cat(range);
 
+Net_target = Humidity;
 % Net_target = Orig_category_biot_small;
-% Net_input = Pixel;
+Net_input = Pixel;
 
 Cats_unique = unique(Net_target);
 
@@ -96,16 +154,16 @@ Layers_1 = [
 Layers_2 = [
     imageInputLayer([1 Input_size 1],"Name","imageinput","Normalization","none")
     
-    fullyConnectedLayer(400,"Name","fc_1")
+    fullyConnectedLayer(1024,"Name","fc_1")
     leakyReluLayer(0.01,"Name","leakyrelu_1")
     
-    fullyConnectedLayer(700,"Name","fc_2")
+    fullyConnectedLayer(1024,"Name","fc_2")
     leakyReluLayer(0.01,"Name","leakyrelu_2")
     
-    fullyConnectedLayer(1300,"Name","fc_3")
+    fullyConnectedLayer(1024,"Name","fc_3")
     leakyReluLayer(0.01,"Name","leakyrelu_3")
     
-    fullyConnectedLayer(320,"Name","fc_4")
+    fullyConnectedLayer(256,"Name","fc_4")
     reluLayer("Name","relu_4")
     
     fullyConnectedLayer(numel(Cats_unique),"Name","fc_5")
@@ -162,24 +220,11 @@ Layers(end) = Classification_Layer;
 clearvars Classification_Layer Input_size
 clearvars Layers_1 Layers_2 Layers_3
 
-%%
-% Orig_category_biot_small = Orig_category_biot_small_BU;
-% Pixel = Pixel_BU;
-% Orig_category_biot_small_BU = Orig_category_biot_small;
-% Pixel_BU = Pixel;
-Delete_ind = randperm(3800) + 6717; %2800 4800
-Net_target(Delete_ind) = [];
-Net_input(:, :, :, Delete_ind) = [];
-
-Delete_ind = randperm(1000) + 4257; %2000
-Net_target(Delete_ind) = [];
-Net_input(:, :, :, Delete_ind) = [];
-
-%%
+%% Create train and validation sets (6666)
 Size = size(Net_input, 4);
 Indexes = randperm(Size);
 
-Val_part = 3500;
+Val_part = round(Size*0.2);
 
 X_train_Shuffle = Net_input(:, :, :, Indexes);
 Y_train_Shuffle = Net_target(Indexes, :);
@@ -204,9 +249,8 @@ plot(Y_Validation)
 
 % plot(Y_train)
 
-%%
+%% Train net (7777)
 clc
-
 
 Pptions = trainingOptions('adam', ...
     'MiniBatchSize', 1000, ...
@@ -224,8 +268,11 @@ Pptions = trainingOptions('adam', ...
 
 % 'OutputFcn', @(x)makeLogVertAx(x, 1)
 
-% Forest_net_V3_01 = trainNetwork(X_train, Y_train, Layers, Pptions);
-Density_net_HIP_V3_01 = trainNetwork(X_train, Y_train, Layers, Pptions);
+% Forest_net_V3_03 = trainNetwork(X_train, Y_train, Layers, Pptions);
+% Density_net_DEF_V3_02 = trainNetwork(X_train, Y_train, Layers, Pptions);
+% Density_net_HIP_V3_02 = trainNetwork(X_train, Y_train, Layers, Pptions);
+% Density_net_DEF_HIP_V3_02 = trainNetwork(X_train, Y_train, Layers, Pptions);
+Humidity_net_V3_02 = trainNetwork(X_train, Y_train, Layers, Pptions);
 
 
 clearvars Pptions
@@ -247,22 +294,31 @@ Dataset_out = Y_Validation;
 % Dataset_in = X_train;
 % Dataset_out = Y_train;
 
-Test_net = Forest_net_V3_01;
+Test_net = Humidity_net_V3_02;
+% Test_net = Forest_net_V3_02;
 % Test_net = Density_net_01;
 
-% Range = Dataset_out == "Лиственный сухой лес";
-% Range = Dataset_out == "Лиственный влажный лес";
-% Range = Dataset_out == "Хвойный сухой лес";
-% Range = Dataset_out == "Хвойный влажный лес";
-
-% Range = Dataset_out == "Лиственный лес";
-% Range = Dataset_out == "Хвойный лес";
 % Range = Dataset_out == "Болото";
 % Range = Dataset_out == "Вырубка";
-% Range = Dataset_out == "Лес";
+% Range = Dataset_out == "Молодняк";
+% Range = Dataset_out == "Сухой или свежий лиственный лес";
+% Range = Dataset_out == "Увлажненный лиственный лес";
+% Range = Dataset_out == "Сухой или свежий ельник";
+% Range = Dataset_out == "Увлажненный ельник";
+% Range = Dataset_out == "Сухой или свежий сосняк";
+% Range = Dataset_out == "Увлажненный сосняк";
 % Range = Dataset_out == "Поля";
 % Range = Dataset_out == "Водный объект";
 % Range = Dataset_out == "Антропоген";
+
+% Range = Dataset_out == "Лиственный лес";
+% Range = Dataset_out == "Хвойный лес";
+% Range = Dataset_out == "Лес";
+
+% Range = Dataset_out == "-";
+% Range = Dataset_out == "Избыточное увлажнение";
+% Range = Dataset_out == "Умеренное увлажнение";
+% Range = Dataset_out == "Недостаточное увлажнение";
 
 % Range = Dataset_out == "zero";
 % Range = Dataset_out == "low";
@@ -305,113 +361,7 @@ clc
 % Category_U
 Cats_unique
 
-%% histogram cut 3333
-clc
-clearvars Orig_category_biot
-Coeffs_out = [];
-Density_rel_out = [];
-Humidity_out = [];
-Orig_category_biot_small_out = [];
-Table_type_out = [];
 
-
-Cats_unique = unique(Orig_category_biot_small);
-Coeffs = squeeze(Pixel)';
-
-clearvars Pixel
-
-for current_cat_N = 1:numel(Cats_unique)
-    current_cat = Cats_unique(current_cat_N)
-    % range = Orig_category_biot_small == "Лиственный лес";
-    % range = Orig_category_biot_small == "Хвойный лес";
-    % range = Orig_category_biot_small == "Молодняк";
-    
-    % range = Orig_category_biot_small == "Болото";
-    % range = Orig_category_biot_small == "Вырубка";
-    % range = Orig_category_biot_small == "Лес";
-    % range = Orig_category_biot_small == "Поля";
-    % range = Orig_category_biot_small == "Водный объект";
-    % range = Orig_category_biot_small == "Антропоген";
-    
-    range = Orig_category_biot_small == current_cat;
-    
-    Coeffs_part = Coeffs(range, :);
-    Density_rel_part = Density_rel(range);
-    Humidity_part = Humidity(range);
-    Category_part = Orig_category_biot_small(range);
-    Table_type_part = Table_type(range);
-    
-    P_value = 5;
-    
-    for N = 1:size(Coeffs_part, 2)
-        Data = Coeffs_part(:, N);
-        
-        P_low = prctile(Data, P_value);
-        P_high = prctile(Data, 100-P_value);
-        
-        if N == 1
-            remove_range = (Data < P_low | Data > P_high);
-        else
-            remove_range = remove_range | (Data < P_low | Data > P_high);
-        end
-        %     Data(~stay_range) = [];
-        
-%         figure
-%         hold on
-%         histogram(Data, 100)
-%         xline(P_low)
-%         xline(P_high)
-%         title(num2str(N))
-        %     set(gca, 'yscale', 'log')
-        
-    end
-    stay_range = ~remove_range;
-    numel(find(stay_range))
-    
-    Coeffs_out = [Coeffs_out; Coeffs_part(stay_range, :)];
-    Density_rel_out = [Density_rel_out; Density_rel_part(stay_range)];
-    Humidity_out = [Humidity_out; Humidity_part(stay_range)];
-    Orig_category_biot_small_out = [Orig_category_biot_small_out; Category_part(stay_range)];
-    Table_type_out = [Table_type_out; Table_type_part(stay_range)];
-    
-    
-end
-
-Coeffs = Coeffs_out;
-Density_rel = Density_rel_out;
-Humidity = Humidity_out;
-Orig_category_biot_small = Orig_category_biot_small_out;
-Table_type = Table_type_out;
-clearvars Coeffs_out Density_rel_out Humidity_out Orig_category_biot_small_out Table_type_out
-
-
-Pixel = Coeffs';
-Pixel(:, :, 2, 2) = 0;
-Pixel = permute(Pixel, [3, 1, 4, 2]);
-Pixel(2, :, :, :) = [];
-Pixel(:, :, 2, :) = [];
-
-
-clearvars Coeffs
-clearvars range P_low P_high P_value N Data Part_cat current_cat_N current_cat
-clearvars Coeffs_part Density_rel_part Humidity_part Category_part Table_type_part
-clearvars stay_range remove_range Cats_unique ans
-
-%% 4444
-clc
-
-Density_rel_cat = categorical("");
-
-range = Density_rel == 0;
-Density_rel_cat(range) = categorical("zero");
-
-range = Density_rel > 0 & Density_rel <= 0.125;
-Density_rel_cat(range) = categorical("low");
-
-range = Density_rel > 0.125;
-Density_rel_cat(range) = categorical("high");
-
-Density_rel_cat = Density_rel_cat';
 
 
 %%

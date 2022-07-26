@@ -18,11 +18,11 @@ clearvars folder_input filename_input Tiff_obj_input
 
 %% 222
 
-Image_file_Data(:,:,1) = single(Image_Data_biot);
-Image_file_Data(:,:,2) = single(Image_Data_dens_all_01);
-Image_file_Data(:,:,3) = single(Image_Data_dens_all_02);
-Image_file_Data(:,:,4) = single(Image_Data_dens_DEF_01);
-Image_file_Data(:,:,5) = single(Image_Data_dens_HIP_01);
+Image_file_Data(:,:,1) = single(Image_Data_output_Forest);
+Image_file_Data(:,:,2) = single(Image_Data_output_DEF_HIP_V3_02);
+Image_file_Data(:,:,3) = single(Image_Data_output_DEF_V3_02);
+Image_file_Data(:,:,4) = single(Image_Data_output_HIP_V3_02);
+Image_file_Data(:,:,5) = single(Image_Data_output_Humidity);
 Image_file_Data(:,:,6) = 6;
 Image_file_Data(:,:,7) = 7;
 Image_file_Data(:,:,8) = 8;
@@ -38,9 +38,26 @@ disp('ready 4')
 close(Tiff_obj_output)
 disp('ready 5')
 
+%%
+clc
+
+ind = find(Image_Data_output_DEF_V3_02 == "high");
+single(Image_Data_output_DEF_V3_02(ind(1)))
 
 
+%%
 
+% Cats = Cats_list_Forest;
+% Cats = Cats_list_DEF_HIP_V3_02;
+% Cats = Cats_list_DEF_V3_02;
+% Cats = Cats_list_HIP_V3_02;
+% Cats = Cats_list_Humidity;
+
+% Title = "Cats_list_Forest";
+% Title = "Cats_list_DEF_HIP_V3_02";
+% Title = "Cats_list_DEF_V3_02";
+% Title = "Cats_list_HIP_V3_02";
+% Title = "Cats_list_Humidity";
 
 
 

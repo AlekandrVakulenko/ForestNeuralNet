@@ -5,7 +5,7 @@
 
 
 Original_data = Orig_category_biot_small;
-Target_net = Forest_net_01;
+Target_net = Forest_net_V3_03;
 
 Net_output = classify(Target_net, Pixel);
 
@@ -38,7 +38,7 @@ for i = 1:numel(Categories)
     Error_mat(i, :) = Row;
 end
 
-Error_mat = round(Error_mat*1000)/10;
+Error_mat = round(Error_mat*10000)/100;
 
 
 clearvars range Row Prediction
